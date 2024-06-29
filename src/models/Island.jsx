@@ -18,7 +18,7 @@ const Island = (props) => {
   const islandRef = useRef();
 
   return (
-    <a.group {...props} ref={islandRef}>
+    <a.group ref={islandRef} {...props}>
       <mesh  
         geometry={nodes.polySurface944_tree_body_0.geometry}
         material={materials.PaletteMaterial001}
