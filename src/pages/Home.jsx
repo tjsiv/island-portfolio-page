@@ -11,7 +11,7 @@ import  Plane  from '../models/Plane';
             Popup
         </div> */}
 const Home = () => {
-    const [isRotating, setIsRotating] = usestate(false);
+    const [isRotating, setIsRotating] = useState(false);
 
     const adjustIslandForScreenSize = () =>{
         let screenScale = null;
@@ -23,9 +23,24 @@ const Home = () => {
         } else{
             screenScale = [1, 1, 1]            
         }
-        return [screenScale, screenPosition, rotation];
+        return [screenScale, screenPosition];
     }
 
+    const adjustPlaneForScreenSize = () =>{
+        let screenScale ;
+        let screenPosition ;
+
+        if(window.innerWidth < 768){
+            screenScale = [1.5, 1.5, 1.5];
+            screenPosition = [0, -1.5, 0];            
+        } else{
+            screenScale = [3, 3, 3];
+            screenPosition = [0, -4, -4];             
+        }
+        return [screenScale, screenPosition];
+    }
+
+    const [planeScale, planePosition] = adjustPlaneForScreenSize()
     const [islandScale, islandPosition, islandRotation] = 
     adjustIslandForScreenSize();
 
@@ -39,8 +54,7 @@ const Home = () => {
                 <directionalLight position={[1, 1, 1]} intensity={2}/>
                 <ambientLight intensity={0.5} />
                 <hemisphereLight  skyColor='#b1e1ff' groundColor='#000000' intensity={1}/>
-
-                <Plane />
+                
                 <Bird />
                 <Sky />
                 <Island
@@ -50,6 +64,13 @@ const Home = () => {
                     isRotating={isRotating}
                     setIsRotating={setIsRotating}
                 />
+                <Plane
+                    isRotating={isRotating}
+                    planeScale={planeScale}
+                    planePosition={planePosition}
+                    rotation={[0, 20, 0]}
+                />
+
             </Suspense>
         </Canvas>
     </section>
