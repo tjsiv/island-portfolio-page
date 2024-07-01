@@ -12,7 +12,7 @@ import { a } from '@react-spring/three'
 
 import isalndScene from '../assets/3d/island.glb'
 
-const Island = ({isRotating, setIsRotating, ...props}) => {
+const Island = ({isRotating, setIsRotating, setCurrentStage, ...props}) => {
 
   const islandRef = useRef();
   const { nodes, materials } = useGLTF(isalndScene);  
@@ -25,31 +25,30 @@ const Island = ({isRotating, setIsRotating, ...props}) => {
 
   //movement events
   const handlePointerDown = (e) => {//side rot stop
-    e.stopProgation();
-    e.preventDefauult();
+    e.stopPropagation();
+    e.preventDefault();
     setIsRotating(true)
 
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     lastx.current = clientX;
   }
   const handlePointerUp = (e) => {//side rot start
-    e.stopProgation();
-    e.preventDefauult();
+    e.stopPropagation();
+    e.preventDefault();
     setIsRotating(false)
+  }
+  const handlePointerMove = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
 
+    if(isRotating){
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const delta = (clientX - lastx.current) / viewport.width;
 
-    islandRef.current.rotation.y += delta * 0.01 * Math.PI
+    islandRef.current.rotation.y += delta * 0.01 * Math.PI;
     lastx.current = clientX;
-    rotationSpeed.current = delta * 0.01 * Math.PI
-    
-  }
-  const handlePointerMove = (e) => {
-    e.stopProgation();
-    e.preventDefauult();
-
-    if(isRotating){handlePointerUp(e);}
+    rotationSpeed.current = delta * 0.01 * Math.PI;
+    }
   }
   const handleKeyDown = (e) => {
     if(e.key === 'ArrowLeft'){
@@ -68,18 +67,31 @@ const Island = ({isRotating, setIsRotating, ...props}) => {
   }
     
   
+  useFrame(() => {
+    if(!isRotating){
+      rotationSpeed.current *= dampingFactor;
+
+      if(Math.abs(rotationSpeed.current) < 0.0001){
+        rotationSpeed.current = 0;
+      } 
+      islandRef.current.rotation.y += rotationSpeed.current; 
+    }else {
+        const rotation = islandRef.current.rotation.y;
+      }
+  })
 
   useEffect(()=>{
-    document.addEventListener('pointerdown', handlePointerDown)
-    document.addEventListener('pointerup', handlePointerUp)
-    document.addEventListener('pointermove', handlePointerMove)
+    const canvas = gl.domElement;
+    canvas.addEventListener('pointerdown', handlePointerDown)
+    canvas.addEventListener('pointerup', handlePointerUp)
+    canvas.addEventListener('pointermove', handlePointerMove)
     document.addEventListener('keydown', handleKeyDown)
     document.addEventListener('keyup', handleKeyUp)
 
     return () => {
-      document.removeEventListener('pointerdown', handlePointerDown)
-      document.removeEventListener('pointerup', handlePointerUp)
-      document.removeEventListener('pointermove', handlePointerMove)
+      canvas.removeEventListener('pointerdown', handlePointerDown)
+      canvas.removeEventListener('pointerup', handlePointerUp)
+      canvas.removeEventListener('pointermove', handlePointerMove)
       document.removeEventListener('keydown', handleKeyDown)
       document.removeEventListener('keyup', handleKeyUp)
     }
